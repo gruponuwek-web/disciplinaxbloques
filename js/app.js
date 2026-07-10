@@ -676,12 +676,7 @@ function exportarPDF(){
     +leyenda
     +'<table><thead><tr>'+hdrs+'</tr></thead><tbody>'+rowsHTML+'</tbody></table>'
     +fmtHTML
-    +'<div class="foot">'+empNombre+' \u00b7 Disciplinas por Bloques 2026</div>
-<div class="sync-bar loading" id="sync-bar">
-  <div class="sync-dot"></div>
-  <span id="sync-msg">Conectando con Google Sheets...</span>
-</div>
-</body></html>';
+    +'<div class="foot">'+empNombre+' \u00b7 Disciplinas por Bloques 2026</div></body></html>';
   var blob=new Blob([fullHTML],{type:'text/html;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='Bloques_'+p.nombre.replace(/\s+/g,'_')+'_'+enc.nombre.replace(/\s+/g,'_')+'.html';
