@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disciplinas por Bloques 2026</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-box" id="logo-initials">GN</div>
+    <div>
+      <div class="logo-t" id="logo-nombre">GRUPO NUWEK</div>
+      <div class="logo-s">Disciplinas por Bloques &middot; 2026</div>
+    </div>
+  </div>
+
+  <!-- Selector de empresa -->
+  <div class="emp-selector" id="emp-selector">
+    <button class="emp-btn" id="emp-btn" onclick="toggleEmpDrop()">
+      <span id="emp-btn-label">Grupo Nuwek</span>
+      <span class="emp-arrow">&#9660;</span>
+    </button>
+    <div class="emp-drop" id="emp-drop">
+      <div class="emp-drop-hd">Empresas</div>
+      <div id="emp-list"></div>
+      <button class="emp-add-btn" onclick="openModalNuevaEmpresa()">&#43; Nueva empresa</button>
+    </div>
+  </div>
+
+  <nav>
+    <button class="nb active" onclick="showView('clasificacion',this)">&#128203; Clasificaci&oacute;n</button>
+    <button class="nb"        onclick="showView('calendario',this)">&#128197; Calendario</button>
+    <button class="nb"        onclick="showView('biblioteca',this)">&#128218; Biblioteca</button>
+  </nav>
+</header>
+
+<div class="puestos-bar" id="puestos-bar"></div>
+
+<div id="view-clasificacion" class="view active">
+  <div class="cw">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+      <div class="ptitle" id="clas-titulo"></div>
+      <button style="padding:3px 8px;border-radius:5px;border:1.5px solid var(--borde);background:#fff;font-size:10px;font-weight:700;cursor:pointer;color:var(--gris-m);" onclick="renombrarPuesto()">&#9998; Renombrar</button>
+    </div>
+    <div class="psub">Actividades del puesto. Haz clic en "+ Formato" para agregar el link de trabajo.</div>
+    <div class="leg">
+      <div class="li"><div class="ld" style="background:var(--soc)"></div>Socio</div>
+      <div class="li"><div class="ld" style="background:var(--dir)"></div>Directiva</div>
+      <div class="li"><div class="ld" style="background:var(--est)"></div>Estrat&eacute;gica</div>
+      <div class="li"><div class="ld" style="background:var(--tac)"></div>T&aacute;ctica</div>
+      <div class="li"><div class="ld" style="background:var(--ope)"></div>Operativa</div>
+    </div>
+    <button class="bact-nueva" onclick="openModalNuevaAct()">&#10010; Nueva actividad</button>
+    <div id="act-list"></div>
+  </div>
+</div>
+
+<div id="view-calendario" class="view">
+  <div class="cal-layout">
+    <div class="banco">
+      <div class="banco-hd">
+        <div class="banco-ht">Encargados</div>
+        <div class="enc-row" id="enc-row"></div>
+        <button class="badd" onclick="openModalEnc()">+ Encargado</button>
+      </div>
+      <div style="padding:6px 10px;border-bottom:1px solid var(--borde);">
+        <button class="bact-nueva" style="margin-bottom:0;" onclick="openModalNuevaAct()">&#10010; Nueva actividad</button>
+      </div>
+      <div class="banco-st">Banco &mdash; arrastra al horario &rarr;</div>
+      <div class="banco-list" id="banco-list"></div>
+    </div>
+    <div class="cal-panel">
+      <div class="cal-tb">
+        <div>
+          <div class="cal-tbt" id="enc-label">&mdash;</div>
+          <div class="cal-tbs">Arrastra actividad &middot; Al soltar elige duraci&oacute;n y d&iacute;as &middot; Clic en bloque para editar</div>
+        </div>
+        <button class="bpdf" onclick="exportarPDF()">&#11015; PDF</button>
+      </div>
+      <div class="cal-scroll" id="cal-scroll">
+        <div style="position:relative;">
+          <table class="cal-table" id="cal-table-el">
+            <thead><tr id="cal-thead"></tr></thead>
+            <tbody id="cal-tbody"></tbody>
+          </table>
+          <div id="bloque-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></div>
+        </div>
+      </div>
+      <div class="comp" id="comp"></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-biblioteca" class="view">
+  <div class="bw">
+    <div class="ptitle" id="bib-titulo"></div>
+    <div class="psub">Links de formatos agregados a las actividades.</div>
+    <div id="bib-content"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div id="overlay-content"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="sync-bar loading" id="sync-bar">
+  <div class="sync-dot"></div>
+  <span id="sync-msg">Conectando con Google Sheets...</span>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
