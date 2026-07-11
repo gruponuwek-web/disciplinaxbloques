@@ -507,7 +507,31 @@ function cancelPopup(){pending=null;closeOverlay();buildTable();renderBanco();}
 // ══════ HELPERS CALENDARIO ══════
 function cell(enc,d,h){if(!enc.celdas[d])enc.celdas[d]={};if(!enc.celdas[d][h])enc.celdas[d][h]=[];return enc.celdas[d][h];}
 function rmCell(enc,d,h,actId){if(enc.celdas[d]&&enc.celdas[d][h])enc.celdas[d][h]=enc.celdas[d][h].filter(function(b){return b.actId!==actId;});}
-function placed(enc){var s=new Set();Object.values(enc.celdas).forEach(function(r){Object.values(r).forEach(function(a){a.forEach(function(b){s.add(b.actId);});});});return s;}
+function placed(enc){
+  var s=new Set();
+  Object.values(enc.celdas).forEach(function(r){
+    Object.values(r).forEach(function(arr){
+      arr.forEach(function(b){ if(b.actId) s.add(b.actId); });
+    });
+  });
+  return s;
+}
+function debugPlaced(){
+  var enc=getEnc();var p=getPuesto();if(!enc||!p)return;
+  var pl=placed(enc);
+  console.log('=== PLACED actIds ===');
+  pl.forEach(function(id){console.log('  placed:',JSON.stringify(id));});
+  console.log('=== ACT ids ===');
+  p.acts.forEach(function(a){console.log('  act:',JSON.stringify(a.id),'|',a.nombre);});
+  console.log('=== RAW CELDAS ===');
+  Object.keys(enc.celdas).forEach(function(d){
+    Object.keys(enc.celdas[d]).forEach(function(h){
+      (enc.celdas[d][h]||[]).forEach(function(b){
+        console.log('  d:'+d+' h:'+h+' actId:'+JSON.stringify(b.actId));
+      });
+    });
+  });
+}
 
 // ══════ RENDER CALENDARIO ══════
 function renderCal(){renderEncTabs();buildTable();renderBanco();renderComp();var enc=getEnc();G('enc-label').textContent=enc?enc.nombre:'\u2014';}
