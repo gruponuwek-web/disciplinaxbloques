@@ -11,7 +11,7 @@ var TCLS={tactica:'tt',operativa:'to',estrategica:'te'};
 var DIAS=['DOM.','LUN.','MAR.','MI\u00c9.','JUE.','VIE.','S\u00c1B.'];
 var DLBL=['Domingo','Lunes','Martes','Mi\u00e9rcoles','Jueves','Viernes','S\u00e1bado'];
 var H_INI=5,H_FIN=21;
-var DURS=[{q:1,label:'15 min',sub:'m\u00ednimo'},{q:2,label:'30 min',sub:''},{q:4,label:'1 hora',sub:'por defecto'},{q:8,label:'2 horas',sub:''},{q:16,label:'4 horas',sub:''},{q:0,label:'Todo el d\u00eda',sub:'m\u00e1ximo'}];
+var DURS=[{q:1,label:'15 min',sub:'mínimo'},{q:2,label:'30 min',sub:''},{q:4,label:'1 hora',sub:'por defecto'},{q:6,label:'1.5 horas',sub:''},{q:8,label:'2 horas',sub:''},{q:16,label:'4 horas',sub:''},{q:0,label:'Todo el día',sub:'máximo'}];
 function durLabel(q){var d=DURS.find(function(x){return x.q===q;});return d?d.label:'1 hora';}
 function badgeHTML(tipo){
   var bg=TBKG[tipo]||'#F3F4F6',cl=TCLR[tipo]||'#6B7280',lbl=TLBL2[tipo]||tipo;
@@ -478,7 +478,10 @@ function openPopup(actId,diaIdx,horaIdx,durQ,isNew){
   pending={actId:actId,diaIdx:diaIdx,horaIdx:horaIdx,isNew:isNew};
   popDurQ=durQ||4;popRep='solo';
   var acts=getPuesto().acts;var act=acts.find(function(a){return a.id===actId;});
-  var h=horaIdx+H_INI,hd=h>12?h-12:h,suf=h<12?'AM':'PM';
+  var absMin=(H_INI*60)+(horaIdx*30);
+  var ph=Math.floor(absMin/60),pm=absMin%60;
+  var hd=ph>12?ph-12:ph,suf=ph<12?'AM':'PM';
+  var pmStr=pm===0?'00':'30';
   var durBtns=DURS.map(function(d){return '<button class="dur-btn'+(popDurQ===d.q?' sel':'')+'" onclick="selDur('+d.q+',this)">'+d.label+(d.sub?'<small>'+d.sub+'</small>':'')+'</button>';}).join('');
   var repSec=isNew?'<div class="sep"></div><div class="pb-sect">En qu\u00e9 d\u00edas?</div><div class="rep-grid"><button class="rep-btn sel" id="pb-rep-solo" onclick="selRep(\'solo\')">Solo este d\u00eda<small>'+DLBL[diaIdx]+'</small></button><button class="rep-btn" id="pb-rep-week" onclick="selRep(\'semana\')">Toda la semana<small>Dom \u2013 S\u00e1b</small></button></div>':'';
   openOverlay('<div class="popup-box"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;"><div style="font-family:\'DM Serif Display\',serif;font-size:17px;">'+(isNew?'Configurar bloque':'Editar duraci\u00f3n')+'</div><button class="mx" onclick="cancelPopup()">\u00d7</button></div><div style="font-size:11px;color:var(--gris-m);margin-bottom:18px;"><strong>'+act.nombre+'</strong> \u2014 '+DLBL[diaIdx]+', '+hd+':00 '+suf+'</div><div class="pb-sect">Duraci\u00f3n</div><div class="dur-grid">'+durBtns+'</div>'+repSec+'<div class="pb-fts"><button class="bcan" onclick="cancelPopup()">Cancelar</button><button class="bsav" onclick="confirmBloque()">Confirmar</button></div></div>');
@@ -545,29 +548,47 @@ function renderEncTabs(){
   });
 }
 function buildTable(){
-  var PX_H=60,PX_Q=PX_H/4;
+  // PX_SLOT = height of each 30-min row
+  var PX_SLOT=30, PX_Q=PX_SLOT/2; // 1 quarter = 15min = 15px
   var thead=G('cal-thead');thead.innerHTML='<th style="width:54px;background:#fff;border:none;"></th>';
   DIAS.forEach(function(d){var th=document.createElement('th');th.textContent=d;thead.appendChild(th);});
   var tbody=G('cal-tbody');tbody.innerHTML='';
-  for(var h=H_INI;h<H_FIN;h++){
-    var hIdx=h-H_INI;var tr=document.createElement('tr');
+  // 2 slots per hour (xx:00 and xx:30)
+  var totalSlots=(H_FIN-H_INI)*2;
+  for(var s=0;s<totalSlots;s++){
+    var slotIdx=s; // slot index stored in data-hora
+    var absMin=(H_INI*60)+(s*30);
+    var hh=Math.floor(absMin/60), mm=absMin%60;
+    var tr=document.createElement('tr');
     var htd=document.createElement('td');htd.className='hora-td';
-    var hd=h>12?h-12:h,suf=h<12?'AM':'PM';htd.textContent=hd+' '+suf;
+    if(mm===0){
+      var hd=hh>12?hh-12:hh,suf=hh<12?'AM':'PM';
+      htd.textContent=hd+' '+suf;
+      htd.style.borderTop='1px solid #D1D5DB';
+    } else {
+      htd.textContent=':30';
+      htd.style.fontSize='8px';
+      htd.style.opacity='.45';
+    }
     tr.appendChild(htd);
     DIAS.forEach(function(_,dIdx){
       (function(cD,cH){
-        var td=document.createElement('td');td.className='cal-td';td.dataset.dia=cD;td.dataset.hora=cH;
+        var td=document.createElement('td');td.className='cal-td';
+        td.style.height=PX_SLOT+'px';
+        if(mm===0) td.style.borderTop='1px solid #D1D5DB';
+        else td.style.borderTop='1px solid #F0F0F0';
+        td.dataset.dia=cD;td.dataset.hora=cH;
         td.addEventListener('dragover',function(e){e.preventDefault();td.classList.add('drag-over');});
         td.addEventListener('dragleave',function(){td.classList.remove('drag-over');});
         td.addEventListener('drop',function(e){e.preventDefault();td.classList.remove('drag-over');handleDrop(cD,cH);});
         tr.appendChild(td);
-      })(dIdx,hIdx);
+      })(dIdx,slotIdx);
     });
     tbody.appendChild(tr);
   }
-  requestAnimationFrame(function(){drawBlockLayer(PX_H,PX_Q);});
+  requestAnimationFrame(function(){drawBlockLayer(PX_SLOT,PX_Q);});
 }
-function drawBlockLayer(PX_H,PX_Q){
+function drawBlockLayer(PX_SLOT,PX_Q){
   var layer=G('bloque-layer');if(!layer)return;
   layer.innerHTML='';layer.style.pointerEvents='none';
   var table=G('cal-table-el');if(!table)return;
@@ -577,15 +598,16 @@ function drawBlockLayer(PX_H,PX_Q){
   var theadH=table.querySelector('thead').offsetHeight;
   var enc=getEnc();if(!enc)return;
   var acts=getPuesto().acts;
+  var totalSlots=(H_FIN-H_INI)*2;
   DIAS.forEach(function(_,dIdx){
-    for(var hIdx=0;hIdx<(H_FIN-H_INI);hIdx++){
+    for(var hIdx=0;hIdx<totalSlots;hIdx++){
       var arr=(enc.celdas[dIdx]||{})[hIdx]||[];if(!arr.length)continue;
-      var x=colLeft[dIdx],w=colWidth[dIdx],yBase=theadH+hIdx*PX_H;
+      var x=colLeft[dIdx],w=colWidth[dIdx],yBase=theadH+hIdx*PX_SLOT;
       var stackTop=yBase+2;
       arr.forEach(function(b){
         var act=acts.find(function(a){return a.id===b.actId;});if(!act)return;
-        var slots=b.durQ===0?(H_FIN-H_INI)*4:b.durQ;
-        var blqH=Math.max(slots*PX_Q-2,16);
+        var slots=b.durQ===0?(H_FIN-H_INI)*4:b.durQ; // durQ in 15-min quarters
+        var blqH=Math.max(slots*PX_Q-2,16); // PX_Q=15px per quarter
         var el=document.createElement('div');
         var bCls=TCLS[act.tipo];
         var bBg=TBKG[act.tipo]||'#D1FAE5',bCl=TCLR[act.tipo]||'#059669';
